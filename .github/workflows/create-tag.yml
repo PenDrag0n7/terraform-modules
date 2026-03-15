@@ -1,0 +1,56 @@
+name: 'Terraform Tagging'
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+    paths:
+      - '**/*.tf'
+  # pull_request:
+  #   branches:
+  #     - main
+  #     - dev
+  #   paths:
+  #     - '**/*.tf'
+
+permissions:
+  id-token: write
+  contents: write
+
+jobs:
+  semver:
+    runs-on: [self-hosted, Linux, ccx4, aks]
+    outputs:
+      semver: ${{ steps.calc-semver.outputs.FullSemVer }}
+      semverbeta: ${{ steps.calc-semver.outputs.MajorMinorPatch }}-${{ steps.calc-semver.outputs.ShortSha }}
+    steps:          
+      - name: Checkout
+        uses: CS2/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Install GitVersion
+        uses: CS2/gittools/gitversion/setup@v0
+        with:
+          versionSpec: '5.x'
+          preferLatestVersion: true
+
+      - name: Determine Version
+        uses: CS2/gittools/gitversion/execute@v0
+        id: calc-semver
+        with:
+          useConfigFile: true
+          configFilePath: GitVersion.yaml
+
+  tag:
+    runs-on: [self-hosted, Linux, aks, ccx4]
+    needs:
+      - semver
+    steps: 
+      - name: Create git tag & push
+        id: tag
+        uses: CS2/tag-repo@v6.1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          custom_tag: ${{ needs.semver.outputs.semver }}

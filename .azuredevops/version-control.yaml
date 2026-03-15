@@ -1,0 +1,19 @@
+parameters:
+  - name: configPath
+    type: string
+    default: './GitVersion.yaml'
+
+steps:
+  - checkout: self
+    fetchDepth: 0
+    
+  - task: gitversion/setup@0
+    displayName: Install GitVersion
+    inputs:
+      versionSpec: '5.x'
+      includePrerelease: false
+
+  - task: gitversion/execute@0
+    inputs:
+      useConfigFile: true
+      configFilePath: ${{ parameters.configPath }}

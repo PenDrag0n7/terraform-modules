@@ -1,0 +1,35 @@
+mode: ContinuousDeployment
+continuous-delivery-fallback-tag: ''
+branches:
+  main:
+    regex: ^master$|^main$
+    tag: ''
+    increment: Minor
+    is-source-branch-for: [ 'dev' ,'feature', 'release' ]
+    is-mainline: true
+    is-release-branch: false
+  release:
+    regex: ^release?[/-]
+    source-branches: [ 'main' ]
+    increment: Major
+    tag: ''
+    is-release-branch: true
+    is-mainline: false
+  feature:
+    regex: feature?[/-]
+    increment: Patch
+    tag: ''
+    is-mainline: false
+    is-release-branch: false
+  dev:
+    regex: ^dev(elop)?(ment)?$
+    mode: ContinuousDeployment
+    tag: alpha
+    increment: Minor
+    prevent-increment-of-merged-branch-version: false
+    track-merge-target: true
+    source-branches: []
+    tracks-release-branches: true
+    is-release-branch: false
+    is-mainline: false
+    pre-release-weight: 0
