@@ -1,5 +1,4 @@
 mode: ContinuousDeployment
-continuous-delivery-fallback-label: ''
 branches:
   main:
     regex: ^master$|^main$
