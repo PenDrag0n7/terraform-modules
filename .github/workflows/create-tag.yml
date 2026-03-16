@@ -1,4 +1,4 @@
-name: 'Terraform Tagging'
+name: Terraform Tagging
 
 on:
   push:
@@ -15,42 +15,53 @@ on:
   #     - '**/*.tf'
 
 permissions:
-  id-token: write
-  contents: write
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   semver:
-    runs-on: [self-hosted, Linux, ccx4, aks]
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
     outputs:
-      semver: ${{ steps.calc-semver.outputs.FullSemVer }}
-      semverbeta: ${{ steps.calc-semver.outputs.MajorMinorPatch }}-${{ steps.calc-semver.outputs.ShortSha }}
-    steps:          
+      semver: ${{ steps.calc-semver.outputs.fullSemVer }}
+      semverbeta: ${{ steps.calc-semver.outputs.majorMinorPatch }}-${{ steps.calc-semver.outputs.shortSha }}
+    steps:
       - name: Checkout
-        uses: CS2/checkout@v3
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
       - name: Install GitVersion
-        uses: CS2/gittools/gitversion/setup@v0
+        uses: gittools/actions/gitversion/setup@v4.3.3
         with:
-          versionSpec: '5.x'
+          versionSpec: '6.6.x'
           preferLatestVersion: true
 
       - name: Determine Version
-        uses: CS2/gittools/gitversion/execute@v0
         id: calc-semver
+        uses: gittools/actions/gitversion/execute@v4.3.3
         with:
-          useConfigFile: true
           configFilePath: GitVersion.yaml
 
   tag:
-    runs-on: [self-hosted, Linux, aks, ccx4]
+    runs-on: ubuntu-24.04
     needs:
       - semver
-    steps: 
-      - name: Create git tag & push
-        id: tag
-        uses: CS2/tag-repo@v6.1
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          custom_tag: ${{ needs.semver.outputs.semver }}
+          fetch-depth: 0
+
+      - name: Create git tag
+        uses: rickstaa/action-create-tag@v1.7.2
+        with:
+          tag: ${{ github.ref_name == 'main' && needs.semver.outputs.semver || needs.semver.outputs.semverbeta }}
+          message: Terraform release
+          tag_exists_error: false
