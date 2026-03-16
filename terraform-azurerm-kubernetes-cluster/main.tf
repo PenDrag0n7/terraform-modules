@@ -239,8 +239,6 @@ resource "azurerm_role_assignment" "scoped_rbac" {
 
 
 module "nodePool" {
-  #source   = "app.terraform.io/bluehalo/resource-group/azurerm"
-  #version  = "1.0.1"
   source                                           = "../terraform-azurerm-kubernetes-node-pool"
   for_each                                         = var.additional_node_pools
   name                                             = each.value.name
