@@ -1,35 +1,43 @@
 mode: ContinuousDeployment
-continuous-delivery-fallback-tag: ''
+continuous-delivery-fallback-label: ''
 branches:
   main:
     regex: ^master$|^main$
-    tag: ''
+    label: ''
     increment: Minor
+    prevent-increment:
+      of-merged-branch: false
     is-source-branch-for: [ 'dev' ,'feature', 'release' ]
-    is-mainline: true
+    is-main-branch: true
     is-release-branch: false
   release:
     regex: ^release?[/-]
     source-branches: [ 'main' ]
     increment: Major
-    tag: ''
+    label: ''
+    prevent-increment:
+      of-merged-branch: false
     is-release-branch: true
-    is-mainline: false
+    is-main-branch: false
   feature:
     regex: feature?[/-]
     increment: Patch
-    tag: ''
-    is-mainline: false
+    label: ''
+    prevent-increment:
+      of-merged-branch: false
+    is-main-branch: false
     is-release-branch: false
   dev:
     regex: ^dev(elop)?(ment)?$
     mode: ContinuousDeployment
-    tag: alpha
+    label: alpha
     increment: Minor
-    prevent-increment-of-merged-branch-version: false
+    prevent-increment:
+      of-merged-branch: false
+      when-current-commit-tagged: false
     track-merge-target: true
     source-branches: []
     tracks-release-branches: true
     is-release-branch: false
-    is-mainline: false
+    is-main-branch: false
     pre-release-weight: 0
